@@ -13,7 +13,7 @@ CREATE TABLE "User" (
 CREATE TABLE "Project" (
     "projectId" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
-    "image" BYTEA NOT NULL,
+    "image" BYTEA,
     "adminId" TEXT NOT NULL,
     "workspace" TEXT,
     "document" TEXT,

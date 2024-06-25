@@ -15,6 +15,7 @@ import {Server} from "socket.io";
 import dotenv from "dotenv";
 import { PrismaClient } from '@prisma/client'
 import userRouter from "./users/users";
+import projectsRouter from "./projects/projects";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ export { prisma };
 app.use(express.json());
 
 app.use("/users", userRouter);
+app.use("/projects", projectsRouter);
 
 app.get("/", (req: Request, res: Response) => {
     res.send("Express + TypeScript Server");

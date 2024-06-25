@@ -9,31 +9,29 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id    String     @id @unique
-  email String  @unique
-  name  String
-  friends String[]
+  id             String    @id @unique
+  email          String    @unique
+  name           String
+  friends        String[]
   friendRequests String[]
-  projects Project[] @relation(name: "projectmembers")
-  adminProjects Project[]
+  projects       Project[] @relation(name: "projectmembers")
+  adminProjects  Project[]
 }
 
-
-
 model Project {
-  projectId    Int    @id @default(autoincrement()) @unique
-  name    String
-  image Bytes
-  adminId  String @unique
-  admin   User @relation(fields: [adminId], references: [id])
-  members User[] @relation(name: "projectmembers")
-  workspace String?
-  document String?
+  projectId  Int     @id @unique @default(autoincrement())
+  name       String
+  image      Bytes?
+  adminId    String  @unique
+  admin      User    @relation(fields: [adminId], references: [id])
+  members    User[]  @relation(name: "projectmembers")
+  workspace  String?
+  document   String?
   githubRepo String
 }

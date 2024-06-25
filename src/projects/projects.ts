@@ -1,11 +1,20 @@
 import express from "express";
+import {prisma} from "../index";
 
-const router = express.Router();
+const projectsRouter = express.Router();
 
 
-router.get("/:id", (req, res) => {
-    const { id } = req.params;
-    res.send("Projects");
+projectsRouter.post("/create", async (req, res) => {
+    const { name, adminId} = req.body;
+    const project = await prisma.project.create({
+        data: {
+            name: name,
+            image: Buffer.from(""),
+            adminId: adminId,
+            githubRepo: "www.github.com"
+        }
+    });
+    res.send(project).status(200);
 });
 
-export default router;
+export default projectsRouter;
