@@ -9,25 +9,83 @@
 //     console.log(`Listening on port ${port}`);
 // });
 
-import express, { Express, Request, Response } from "express";
+import express, {Express, NextFunction, Request, Response} from "express";
 import {createServer} from "node:http";
 import {Server} from "socket.io";
 import dotenv from "dotenv";
 import { PrismaClient } from '@prisma/client'
 import userRouter from "./users/users";
 import projectsRouter from "./projects/projects";
+import cors from "cors";
+import {setupKinde, protectRoute, getUser, GrantType} from "@kinde-oss/kinde-node-express";
+import {jwtVerify} from "@kinde-oss/kinde-node-express";
+
 
 dotenv.config();
+// const config = {
+//     clientId: process.env.KINDE_CLIENT_ID || "",
+//     issuerBaseUrl: process.env.KINDE_ISSUER_URL || "",
+//     siteUrl: process.env.KINDE_SITE_URL || "",
+//     secret: process.env.KINDE_CLIENT_SECRET || "",
+//     redirectUrl: process.env.KINDE_POST_LOGIN_REDIRECT_URL || "",
+//     scope: "openid profile email",
+//     grantType: GrantType.AUTHORIZATION_CODE, //or CLIENT_CREDENTIALS or PKCE
+//     unAuthorisedUrl: process.env.KINDE_POST_LOGOUT_REDIRECT_URL || "",
+//     postLogoutRedirectUrl: process.env.KINDE_POST_LOGOUT_REDIRECT_URL || ""
+// };
 
 const app: Express = express();
+// setupKinde(config, app);
 const server = createServer(app);
 const io = new Server(server);
 const port = process.env.PORT || 3000;
 const prisma = new PrismaClient();
 
+
+const verifier = jwtVerify("https://mrflyn6000.kinde.com", {"audience": "rtct_backend_api"});
+export {verifier};
 export { prisma };
 
-app.use(express.json());
+export async function verifierMiddleware (req: any, res: any, next: NextFunction) {
+    try {
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.split(' ')[1] || "";
+        const headers = {
+            'Accept':'application/json',
+            'Authorization':`Bearer ${token}`
+        };
+        const result = await fetch('https://mrflyn6000.kinde.com/oauth2/user_profile',
+            {
+                method: 'GET',
+
+                headers: headers
+            });
+
+
+        // const payload = await verifier.verify(token);
+        if(result.status === 200){
+            req.user = await result.json();
+            next();
+            return;
+        }
+        res.send("Invalid token").status(401);
+        return;
+    } catch (err) {
+        console.log(err);
+        res.send("Invalid token ERROR").status(401);
+        return;
+    }
+}
+
+
+
+app.use(cors({
+    origin: ["http://localhost:3000", "https://rtct.vercel.app"],
+}));
+
+app.use(express.json({
+    limit: "5mb"
+}));
 
 app.use("/users", userRouter);
 app.use("/projects", projectsRouter);

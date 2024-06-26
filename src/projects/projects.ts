@@ -1,18 +1,18 @@
 import express from "express";
-import {prisma} from "../index";
+import {prisma, verifierMiddleware} from "../index";
 
 const projectsRouter = express.Router();
 
 
-projectsRouter.post("/create", async (req, res) => {
-    const {name, adminId, githubRepo, image} = req.body;
+projectsRouter.post("/create",verifierMiddleware , async (req:any, res) => {
+    const {name, githubRepo, image} = req.body;
 
 
     const project = await prisma.project.create({
         data: {
             name: name,
-            image: Buffer.from(image),
-            adminId: adminId,
+            image: image,
+            adminId: req.user.id,
             githubRepo: githubRepo,
         }
     });
@@ -22,7 +22,7 @@ projectsRouter.post("/create", async (req, res) => {
             adminProjects: true
         },
         where: {
-            id: adminId
+            id: req.user.id
         },
         data: {
             projects: {
@@ -33,16 +33,19 @@ projectsRouter.post("/create", async (req, res) => {
             }
         }
 
+    }).catch((err) => {
+        res.status(400).send(err);
     });
     if (!user) {
-        res.send("User not found").status(404);
+        res.status(404).send("User not found");
         return;
     }
-    res.send(user).status(200);
+    res.status(200).send(user);
 });
 
-projectsRouter.get("/:id/:userId", async (req, res) => {
-    const {id, userId} = req.params;
+projectsRouter.get("/:id", verifierMiddleware,async (req:any, res) => {
+    const {id} = req.params;
+
     const project = await prisma.project.findUnique({
         include: {
             members: true,
@@ -54,26 +57,56 @@ projectsRouter.get("/:id/:userId", async (req, res) => {
     });
     const user = await prisma.user.findUnique({
         where: {
-            id: userId
+            id: req.user.id
         }
     });
     if (!user) {
-        res.send("User not found").status(404);
+        res.status(401).send("User not found");
         return;
     }
     if (!project) {
-        res.send("Project not found").status(404);
+        res.status(401).send("Project Not found").status(400);
         return;
     }
-    if (project.adminId !== userId && !project.members.includes(user)) {
-        res.send("You are not authorized to view this project").status(401);
+    if (project.adminId !== req.user.id && !project.members.includes(user)) {
+        res.status(404).send("You are not authorized to view this project").status(400);
         return;
     }
     res.send(project).status(200);
 });
+projectsRouter.delete("/:id", verifierMiddleware, async (req: any, res) => {
+    const {id} = req.params;
+    const project = await prisma.project.findUnique({
+        include: {
+            members: true,
+            admin: true
+        },
+        where: {
+            projectId: parseInt(id)
+        }
+    }).catch((err) => {
+        res.status(400).send(err);
+    });
+    if (!project) {
+        res.status(404).send("Project not found");
+        return;
+    }
+    if (project.adminId !== req.user.id) {
+        res.status(401).send("You are not authorized to delete this project");
+        return;
+    }
+    await prisma.project.delete({
+        where: {
+            projectId: parseInt(id)
+        }
+    }).catch((err) => {
+        res.status(401).send(err);
+    });
+    res.status(200).send(project);
+});
 
-projectsRouter.patch("/update", async (req, res) => {
-    const {adminId, projectId, name, image, githubRepo, addMemberId, remMemberId, workspace, document} = req.body;
+projectsRouter.patch("/update", verifierMiddleware,async (req:any, res) => {
+    const {projectId, name, image, githubRepo, addMemberId, remMemberId, workspace, document} = req.body;
     const finalData: any = {
         name: name,
         image: image,
@@ -100,15 +133,15 @@ projectsRouter.patch("/update", async (req, res) => {
             adminProjects: true,
         },
         where: {
-            id: adminId.toString()
+            id: req.user.id
         }
     });
     if (!user) {
-        res.send("User not found").status(404);
+        res.status(404).send("User not found");
         return;
     }
-    if (!JSON.stringify(user.adminProjects).includes(projectId.toString())) {
-        res.send("Unauthorized").status(401);
+    if (!JSON.stringify(user.adminProjects).includes(projectId)) {
+        res.status(401).send("Unauthorized");
         return;
     }
     const project = await prisma.project.update({
@@ -120,9 +153,9 @@ projectsRouter.patch("/update", async (req, res) => {
         },
         data: data
     }).catch((err) => {
-        res.send(err).status(400);
+        res.status(400).send(err);
     });
-    res.send(project).status(200);
+    res.status(200).send(project);
 });
 
 function omitNullish(obj: any) {
