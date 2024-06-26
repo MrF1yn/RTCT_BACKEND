@@ -28,7 +28,7 @@ model Project {
   projectId  Int     @id @unique @default(autoincrement())
   name       String
   image      Bytes?
-  adminId    String  @unique
+  adminId    String
   admin      User    @relation(fields: [adminId], references: [id])
   members    User[]  @relation(name: "projectmembers")
   workspace  String?
