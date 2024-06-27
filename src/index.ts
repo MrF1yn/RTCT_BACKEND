@@ -81,6 +81,7 @@ export async function verifierMiddleware (req: any, res: any, next: NextFunction
 
 app.use(cors({
     origin: ["http://localhost:3000", "https://rtct.vercel.app"],
+    credentials:true,            //access-control-allow-credentials:true
 }));
 
 app.use(express.json({
@@ -109,6 +110,8 @@ io.on('connection', (socket) => {
 
     });
 });
+
+
 
 server.listen(port, () => {
     console.log(`[server]: Server is running at http://localhost:${port}`);
