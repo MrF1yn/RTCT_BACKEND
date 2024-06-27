@@ -37,6 +37,7 @@ userRouter.get("/verify/:email", async (req, res) => {
               email: email
          }
     }).catch((err) => {
+        console.log(err);
         res.status(400).send(err);
     });
     if (!user){
