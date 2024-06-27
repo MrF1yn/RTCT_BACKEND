@@ -107,7 +107,7 @@ export async function verifierMiddleware (req: any, res: any, next: NextFunction
 
 
 app.use(cors({
-    origin: ["http://localhost:3000", "https://rtct.vercel.app"],
+    origin: "*",
     credentials:true,            //access-control-allow-credentials:true
 }));
 
