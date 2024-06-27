@@ -19,7 +19,8 @@ userRouter.post("/create", verifierMiddleware, async (req: any, res) => {
         create: {
             id: req.user.id,
             name: req.user.first_name + " " + req.user.last_name,
-            email: req.user.preferred_email
+            email: req.user.preferred_email,
+            image: req.user.picture
         }
     }).catch((err) => {
         res.status(400).send(err);
@@ -68,7 +69,7 @@ userRouter.get("/", verifierMiddleware, async (req: any, res) => {
 });
 
 userRouter.patch("/update", verifierMiddleware, async (req: any, res) => {
-    const {name, email} = req.body;
+    const {name} = req.body;
     const user = await prisma.user.upsert({
         where: {
             id: req.user.id
@@ -79,7 +80,8 @@ userRouter.patch("/update", verifierMiddleware, async (req: any, res) => {
         create: {
             id: req.user.id,
             name: name,
-            email: email
+            email: req.user.email,
+            image: req.user.picture
         }
     }).catch((err) => {
         res.status(400).send(err);
