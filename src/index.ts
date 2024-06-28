@@ -62,7 +62,8 @@ const app: Express = express();
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*"
+        origin: "*",
+        credentials: true,
     }
 });
 const port = process.env.PORT || 3000;
