@@ -65,7 +65,6 @@ const io = new Server(server, {
         origin: "*",
         credentials: true,
     },
-    path: '/rtct_backend/'
 });
 const port = process.env.PORT || 3000;
 const prisma = new PrismaClient();
