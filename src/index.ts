@@ -63,9 +63,8 @@ const server = createServer(app);
 const io = new Server(server, {
     cors: {
         origin: "*",
-        credentials: true,
-    },
-    path: '/mysocket'
+        methods: ["GET", "POST"],
+    }
 });
 const port = process.env.PORT || 3000;
 const prisma = new PrismaClient();
