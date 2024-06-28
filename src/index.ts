@@ -64,7 +64,8 @@ const io = new Server(server, {
     cors: {
         origin: "*",
         methods: ["GET", "POST"],
-    }
+    },
+    path: "/socket.io"
 });
 const port = process.env.PORT || 3000;
 const prisma = new PrismaClient();
