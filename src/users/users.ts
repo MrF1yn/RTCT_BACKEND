@@ -1,5 +1,6 @@
 import express, {NextFunction} from "express";
-import {prisma, verifierMiddleware} from "../index";
+import {mongoDb, prisma, verifierMiddleware} from "../index";
+import projects from "../projects/projects";
 
 
 const userRouter = express.Router();
@@ -49,6 +50,8 @@ userRouter.get("/verify/:email", async (req, res) => {
 
 });
 
+
+
 userRouter.get("/", verifierMiddleware, async (req: any, res) => {
     const user = await prisma.user.findUnique({
         include: {
@@ -66,6 +69,38 @@ userRouter.get("/", verifierMiddleware, async (req: any, res) => {
         return;
     }
     res.status(200).send(user);
+});
+
+userRouter.get("/initial_chats", verifierMiddleware, async (req: any, res) => {
+    const user = await prisma.user.findUnique({
+        include: {
+            projects: true,
+        },
+        where: {
+            id: req.user.id
+        }
+    }).catch((err) => {
+        res.status(400).send(err);
+    });
+    if (!user) {
+        res.status(404).send("User not found");
+        return;
+    }
+    const project = await prisma.project.findMany({
+        include: {
+            members: true
+        },
+        where: {
+            members: {
+                some: {
+                    id: user.id
+                }
+            }
+        }
+    }).catch((err) => {
+        res.status(400).send(err);
+    });
+    res.status(200).send(project);
 });
 
 userRouter.patch("/update", verifierMiddleware, async (req: any, res) => {
@@ -87,6 +122,11 @@ userRouter.patch("/update", verifierMiddleware, async (req: any, res) => {
         res.status(400).send(err);
     });
     res.status(200).send(user);
+});
+
+userRouter.get("/chat_history", verifierMiddleware, async (req: any, res) => {
+    const chat_history = await mongoDb.collection("chat_history").find({userId: req.user.id}).toArray();
+    res.status(200).send(chat_history);
 });
 
 export default userRouter;
