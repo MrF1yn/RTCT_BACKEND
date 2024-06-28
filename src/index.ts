@@ -171,6 +171,11 @@ io.on('connection', (socket) => {
         socketUsersMap.delete(socket);
     });
 
+    socket.on('sendMessageMeet', ({ room, message }) => {
+        socket.join(room);
+        io.to(room).emit('messageMeet', message);
+    });
+
     socket.on('project:join', async (projectId) => {
         const user = socketUsersMap.get(socket);
         const project = await prisma.project.findUnique({
