@@ -171,8 +171,11 @@ io.on('connection', (socket) => {
         socketUsersMap.delete(socket);
     });
 
-    socket.on('sendMessageMeet', ({ room, message }) => {
+    socket.on('joinRoom', (room) => {
         socket.join(room);
+    });
+
+    socket.on('sendMessageMeet', ({ room, message }) => {
         io.to(room).emit('messageMeet', message);
     });
 
