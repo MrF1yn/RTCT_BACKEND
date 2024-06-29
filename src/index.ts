@@ -89,7 +89,7 @@ export async function verifierMiddleware(req: any, res: any, next: NextFunction)
 
                 headers: headers
             });
-
+        console.log(result);
 
         // const payload = await verifier.verify(token);
         if (result.status === 200) {
@@ -187,7 +187,7 @@ io.on('connection', (socket) => {
                 admin: true
             },
             where: {
-                projectId: parseInt(projectId)
+                projectId: projectId
             }
         }).catch((err) => {
             console.log(err);
@@ -238,7 +238,7 @@ io.on('connection', (socket) => {
         const user = socketUsersMap.get(socket);
         const packet = populateMessagePacket(user, msg);
         const senderChatHistory = userChatHistory.get(user.id);
-        const receiverChatHistory = userChatHistory.get(target);
+        const receiverChatHistory = userChatHistory.get(target.id);
         if (senderChatHistory) {
             senderChatHistory.push([user, packet]);
             userChatHistory.set(user.id, senderChatHistory);
@@ -247,12 +247,12 @@ io.on('connection', (socket) => {
         }
         if (receiverChatHistory) {
             receiverChatHistory.push([user, packet]);
-            userChatHistory.set(target, receiverChatHistory);
+            userChatHistory.set(target.id, receiverChatHistory);
         } else {
-            userChatHistory.set(target, [[user, packet]]);
+            userChatHistory.set(target.id, [[user, packet]]);
         }
 
-        socket.emit('message:receive', user, packet);
+        socket.emit('message:receive', target, packet);
         const targetSocket =
             Array.from(socketUsersMap).find(([_, user]) => user.id === target);
         if (!targetSocket?.length) return;

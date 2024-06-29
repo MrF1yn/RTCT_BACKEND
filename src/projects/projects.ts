@@ -53,7 +53,7 @@ projectsRouter.get("/:id", verifierMiddleware, async (req: any, res) => {
             pendingMembers: true
         },
         where: {
-            projectId: parseInt(id)
+            projectId: id
         }
     });
     const user = await prisma.user.findUnique({
@@ -80,10 +80,9 @@ projectsRouter.get("/:id", verifierMiddleware, async (req: any, res) => {
 
 projectsRouter.get("/requests_page/:id", verifierMiddleware, async (req: any, res) => {
     const {id} = req.params;
-
     const project = await prisma.project.findUnique({
         where: {
-            projectId: parseInt(id)
+            projectId: id
         }
     });
     if (!project) {
@@ -108,7 +107,7 @@ projectsRouter.get("/request/:id", verifierMiddleware, async (req: any, res) => 
             pendingMembers: true
         },
         where: {
-            projectId: parseInt(id)
+            projectId: id
         }
     });
     const user = await prisma.user.findUnique({
@@ -135,7 +134,7 @@ projectsRouter.get("/request/:id", verifierMiddleware, async (req: any, res) => 
     }
     const updatedProject = await prisma.project.update({
         where: {
-            projectId: parseInt(id)
+            projectId: id
         },
         data: {
             pendingMembers: {
@@ -151,6 +150,10 @@ projectsRouter.get("/request/:id", verifierMiddleware, async (req: any, res) => 
 
 projectsRouter.delete("/:id", verifierMiddleware, async (req: any, res) => {
     const {id} = req.params;
+    if(id){
+        res.status(400).send("Project Id is required");
+        return;
+    }
     const project = await prisma.project.findUnique({
         include: {
             members: true,
@@ -158,7 +161,7 @@ projectsRouter.delete("/:id", verifierMiddleware, async (req: any, res) => {
             pendingMembers: true
         },
         where: {
-            projectId: parseInt(id)
+            projectId: id
         }
     }).catch((err) => {
         res.status(400).send(err);
@@ -173,7 +176,7 @@ projectsRouter.delete("/:id", verifierMiddleware, async (req: any, res) => {
     }
     await prisma.project.delete({
         where: {
-            projectId: parseInt(id)
+            projectId: id
         }
     }).catch((err) => {
         res.status(401).send(err);
@@ -240,7 +243,7 @@ projectsRouter.patch("/update", verifierMiddleware, async (req: any, res) => {
             pendingMembers: true
         },
         where: {
-            projectId: parseInt(projectId)
+            projectId: projectId
         },
         data: data
     }).catch((err) => {
