@@ -175,8 +175,8 @@ io.on('connection', (socket) => {
         socket.join(room);
     });
 
-    socket.on('sendMessageMeet', ({ room, message }) => {
-        io.to(room).emit('messageMeet', message);
+    socket.on('sendMessageMeet', ({ room, username, message }) => {
+        io.to(room).emit('messageMeet', username, message);
     });
 
     socket.on('project:join', async (projectId) => {
