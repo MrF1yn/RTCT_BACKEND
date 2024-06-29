@@ -69,8 +69,9 @@ projectsRouter.get("/:id", verifierMiddleware, async (req: any, res) => {
         res.status(401).send("Project Not found").status(400);
         return;
     }
-    if (project.adminId !== req.user.id && !project.members.includes(user)) {
-        res.status(404).send("You are not authorized to view this project").status(400);
+    console.log(project.members);
+    if (project.adminId !== req.user.id && !JSON.stringify(project.members).includes(user.id)){
+        res.status(404).send("You are not authorized to view this project");
         return;
     }
     res.send(project).status(200);
@@ -124,11 +125,11 @@ projectsRouter.get("/request/:id", verifierMiddleware, async (req: any, res) => 
         res.status(401).send("Project Not found").status(400);
         return;
     }
-    if (project.adminId === req.user.id || project.members.includes(user)) {
+    if (project.adminId === req.user.id || JSON.stringify(project.members).includes(user.id)) {
         res.status(404).send("You are already part of the project!").status(400);
         return;
     }
-    if (project.pendingMembers.includes(user)) {
+    if (JSON.stringify(project.pendingMembers).includes(user.id)) {
         res.status(404).send("You have already requested for joinging the project!").status(400);
         return;
     }
