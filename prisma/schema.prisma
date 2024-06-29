@@ -24,6 +24,7 @@ model User {
   friends        String[]
   friendRequests String[]
   projects       Project[] @relation(name: "projectmembers")
+  pendingProjects Project[] @relation(name: "pendingmembers")
   adminProjects  Project[]
 }
 
@@ -34,6 +35,7 @@ model Project {
   adminId    String
   admin      User    @relation(fields: [adminId], references: [id])
   members    User[]  @relation(name: "projectmembers")
+  pendingMembers    User[]  @relation(name: "pendingmembers")
   workspace  String?
   document   String?
   githubRepo String
