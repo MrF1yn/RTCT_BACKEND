@@ -195,7 +195,7 @@ io.on('connection', (socket) => {
         if (!project) {
             return;
         }
-        if (project.members.toString().includes(user.id) || project.adminId === user.id) {
+        if (JSON.stringify(project.members).includes(user.id) || project.adminId === user.id) {
             socket.join(projectId);
             const chatHistory = userChatHistory.get(projectId);
             if(!chatHistory) return;
@@ -226,7 +226,7 @@ io.on('connection', (socket) => {
         console.log('message: ' + msg + " from: " + socket.id);
         const user = socketUsersMap.get(socket);
         const history = (await mongoDb.collection("chat_history").find({userId: user.id}).toArray());
-        socket.emit('message:history', JSON.stringify(history));
+        // socket.emit('message:history', JSON.stringify(history));
         const chatHistory = userChatHistory.get(user.id);
         if (!chatHistory) return;
         for (let [user1, packet] of chatHistory) {
@@ -240,10 +240,10 @@ io.on('connection', (socket) => {
         const senderChatHistory = userChatHistory.get(user.id);
         const receiverChatHistory = userChatHistory.get(target.id);
         if (senderChatHistory) {
-            senderChatHistory.push([user, packet]);
+            senderChatHistory.push([target, packet]);
             userChatHistory.set(user.id, senderChatHistory);
         } else {
-            userChatHistory.set(user.id, [[user, packet]]);
+            userChatHistory.set(user.id, [[target, packet]]);
         }
         if (receiverChatHistory) {
             receiverChatHistory.push([user, packet]);
@@ -254,9 +254,10 @@ io.on('connection', (socket) => {
 
         socket.emit('message:receive', target, packet);
         const targetSocket =
-            Array.from(socketUsersMap).find(([_, user]) => user.id === target);
+            Array.from(socketUsersMap).find(([_, user]) => user.id === target.id);
         if (!targetSocket?.length) return;
         targetSocket[0].emit('message:receive', user, packet);
+        console.log('forwarded message'+ JSON.stringify(packet) +' to ' + targetSocket[1].first_name);
     });
 
 
