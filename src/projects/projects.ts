@@ -150,7 +150,7 @@ projectsRouter.get("/request/:id", verifierMiddleware, async (req: any, res) => 
 
 projectsRouter.delete("/:id", verifierMiddleware, async (req: any, res) => {
     const {id} = req.params;
-    if(id){
+    if(!id){
         res.status(400).send("Project Id is required");
         return;
     }
